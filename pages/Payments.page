@@ -1,0 +1,15 @@
+<!--
+ - Created by field on 3/30/18.
+ -->
+
+<apex:page id="Payments" controller="PaymentsController">
+    <apex:form>
+        <apex:outputPanel id="AllPaymentsList">
+            <apex:pageMessages />
+            <apex:pageMessage strength="3" rendered="{!NOT(HasContacts)}" severity="info" detail="No contacts have made payments." />
+            <apex:repeat value="{!Contacts}" var="contact">
+                <c:ContactPayments contact="{!contact}" />
+            </apex:repeat>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

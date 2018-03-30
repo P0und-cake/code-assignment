@@ -1,0 +1,63 @@
+<!--
+ - Created by field on 3/30/18.
+ -->
+
+<apex:component id="ContactPayments" controller="ContactPaymentsController" allowDML="true">
+    <apex:attribute name="contact" description="The contact with payments" type="Contact" assignTo="{!ContactRecord}"/>
+    <!--<apex:form>-->
+        <apex:outputPanel id="ContactPaymentsSection" rendered="{!contact != null}">
+            <apex:actionRegion id="contactPanel">
+                <apex:pageBlock title="{!contact.Name}" mode="edit">
+                    <apex:pageBlockButtons location="both">
+                        <apex:commandButton action="{!addNewPayment}" value="New Payment" reRender="PaymentSummary,AllPaymentsList,ContactPaymentsSection"/>
+                        <apex:commandButton action="{!updatePayments}" value="Update Payments" reRender="contactPanel,PaymentSummary,AllPaymentsList,ContactPaymentsSection"/>
+                    </apex:pageBlockButtons>
+                    <apex:pageBlockSection title="New Payment" rendered="{!IsAddingNewPayment}" columns="1">
+                        <apex:pageBlockSectionItem>
+                            <apex:outputLabel value="Project" for="new_payment_project"/>
+                            <apex:inputField value="{!NewPayment.Project__c}" id="new_payment_project"/>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem>
+                            <apex:outputLabel value="Amount" for="new_payment_amount"/>
+                            <apex:inputField value="{!NewPayment.Amount__c}" id="new_payment_amount" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem>
+                            <apex:outputLabel value="Payment Date" for="new_payment_date"/>
+                            <apex:inputField value="{!NewPayment.Payment_Date__c}" id="new_payment_date" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem>
+                            <apex:commandButton action="{!saveNewPayment}" value="Save" reRender="PaymentSummary,AllPaymentsList,ContactPaymentsSection"/>
+                            <apex:commandButton action="{!cancelNewPayment}" value="Cancel" immediate="true" reRender="PaymentSummary,AllPaymentsList,ContactPaymentsSection"/>
+                        </apex:pageBlockSectionItem>
+                    </apex:pageBlockSection>
+                    <apex:pageBlockSection id="PaymentSummary" title="Payment Summary">
+                        <apex:outputField value="{!contact.Total_Payment__c}" label="Total Payments"/>
+                        <apex:outputField value="{!contact.Last_Payment_Date__c}" label="Most Recent Payment"/>
+                        <apex:outputField value="{!contact.Number_of_Payments__c}" label="Number of Payments"/>
+                    </apex:pageBlockSection>
+                    <apex:repeat value="{!contact.Payments__r}" var="payment">
+                        <apex:pageBlockSection title="{!payment.Name}">
+                            <apex:pageBlockSectionItem>
+                                <apex:outputLabel value="Project"/>
+                                <apex:outputField value="{!payment.Project__r.Name}"/>
+                            </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem>
+                                <apex:outputLabel value="Amount"/>
+                                <apex:inputField value="{!payment.Amount__c}"/>
+                            </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem>
+                                <apex:outputLabel value="Payment Date"/>
+                                <apex:inputField value="{!payment.Payment_Date__c}"/>
+                            </apex:pageBlockSectionItem>
+                            <apex:pageBlockSectionItem>
+                                <apex:commandLink action="{!deletePayment}" value="Delete" reRender="ContactPanel,PaymentSummary,AllPaymentsList,ContactPaymentsSection">
+                                    <apex:param value="{!payment.Id}" name="TargetPaymentId" assignTo="{!c.TargetPaymentId}" />
+                                </apex:commandLink>
+                            </apex:pageBlockSectionItem>
+                        </apex:pageBlockSection>
+                    </apex:repeat>
+                </apex:pageBlock>
+            </apex:actionRegion>
+        </apex:outputPanel>
+    <!--</apex:form>-->
+</apex:component>
