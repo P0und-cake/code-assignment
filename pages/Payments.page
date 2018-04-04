@@ -3,10 +3,176 @@
  -->
 
 <apex:page id="Payments" controller="PaymentsController">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+    <apex:includeScript value="{!$Resource.Moment}" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Roboto:400,700" rel="stylesheet" />
+    <script>
+        function validateForm() {
+            startProcessing();
+
+            // Innocent until proven guilty.
+            var isValid = true;
+
+            var numberFields = $('.newPaymentAmount');
+
+            if (numberFields.length) {
+                for (i = 0; i < numberFields.length; i++) {
+                    if (!validateNumberInput(numberFields[i])) {
+                        isValid = false;
+                    }
+                }
+            }
+
+            var dateFields = $('.newPaymentDate');
+
+            if (dateFields.length) {
+                for (i = 0; i < dateFields.length; i++) {
+                    if (!validateDateInput(dateFields[i])) {
+                        isValid = false;
+                    }
+                }
+            }
+
+            return isValid;
+        }
+
+        function validatePayments() {
+            startProcessing();
+
+            var isValid = true;
+
+            var numberFields = document.getElementsByClassName("numberField");
+
+            if (numberFields.length) {
+                for (i = 0; i < numberFields.length; i++) {
+                    if (!validateNumberInput(numberFields[i])) {
+                        isValid = false;
+                    }
+                }
+            }
+
+            var dateFields = document.getElementsByClassName("dateField");
+
+            if (dateFields.length) {
+                for (i = 0; i < dateFields.length; i++) {
+                    if (!validateDateInput(dateFields[i])) {
+                        isValid = false;
+                    }
+                }
+            }
+
+            return isValid;
+        }
+
+        function validateNumberInput(numberInput) {
+            var numberValue = numberInput.value;
+
+            // Use the numeral function from the numeral package to more easily check if the format is a valid number value.
+            // The numeral package was more robust than the
+            var numeralVal = numeral(numberValue);
+
+            if (numeralVal.value() == null) {
+                addErrorMsg(numberInput, 'This must be a number.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateDateInput(dateInput) {
+            var dateValue = dateInput.value;
+
+            if (!moment(dateValue).isValid()) {
+                addErrorMsg(dateInput, 'This must be a valid date. (e.g. mm/dd/yyyy)');
+                return false;
+            }
+
+            return true;
+        }
+
+        function addErrorMsg(input, errorMessage) {
+            // Check for existing error messages, if there isn't one already add it.'
+            var existingErrorMsgs = $(input).siblings('.errorMsg');
+            if (existingErrorMsgs.length) {
+                return;
+            }
+
+            var divNode = document.createElement('div');
+            divNode.innerHTML = errorMessage;
+            divNode.className = 'errorMsg';
+
+            $(input).after(divNode);
+        }
+    </script>
+
+    <style>
+        body .bPageBlock {
+            border-bottom: none !important;
+            border-left: none !important;
+            border-right: none !important;
+            background-color: #fff !important;
+            font-size: 1.1em;
+            border-radius: 0 !important;
+            border-top: 3px solid #0091D1 !important;
+        }
+
+        .bPageBlock {
+            padding: 5px 0 20px 0 !important;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .bPageBlock .pbTitle {
+            font-weight: bold;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body .btn {
+            background: none !important;
+            border-radius: 0px !important;
+            border: 2px solid #5BE05B;
+            background-color: #5BE05B !important;
+            color: #fff;
+        }
+
+        body .btn.btn-alt {
+            background-color: #fff !important;
+            color: #333;
+        }
+
+        body .btn:hover {
+            border-color: #3FBF3F !important;
+            background-color: #3FBF3F !important;
+        }
+
+        body .btn.btn-alt:hover {
+            background-color: #fff !important;
+            color: #333;
+        }
+
+        body a.btn-destructive {
+            padding: 5px 10px;
+            text-decoration: none;
+            background-color: #fff !important;
+            color: #ED4116;
+            border-color: #ED4116 !important;
+            border: 2px solid #ED4116;
+        }
+
+        body a.btn-destructive:hover {
+            background-color: #ED4116 !important;
+            color: #fff;
+            border-color: #ED4116;
+        }
+    </style>
+
     <apex:form>
         <apex:outputPanel id="AllPaymentsList">
             <apex:pageMessages />
             <apex:pageMessage strength="3" rendered="{!NOT(HasContacts)}" severity="info" detail="No contacts have made payments." />
+
+            <c:ProcessingModal />
+
             <apex:repeat value="{!Contacts}" var="contact">
                 <c:ContactPayments contact="{!contact}" />
             </apex:repeat>
